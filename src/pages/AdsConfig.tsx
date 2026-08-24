@@ -27,6 +27,7 @@ export default function AdsConfig({
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [toggling, setToggling] = useState(false)
+  const [slotErrors, setSlotErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -41,7 +42,30 @@ export default function AdsConfig({
     fetchSlots()
   }, [appId])
 
+  const validateAdUnitId = (value: string): string | null => {
+    const v = value.trim()
+    if (!v) return null // kosong = OK
+    if (!/^ca-app-pub-\d+\/\d+$/.test(v)) {
+      return 'Format salah! Ad Unit ID pakai slash (/): ca-app-pub-XXXX/XXXX'
+    }
+    return null
+  }
+
   const updateSlot = async (id: string, patch: Partial<AdSlot>) => {
+    // Validasi kalau patch berisi ad_unit_id
+    if (patch.ad_unit_id !== undefined) {
+      const err = validateAdUnitId(patch.ad_unit_id || '')
+      if (err) {
+        setSlotErrors((prev) => ({ ...prev, [id]: err }))
+        return
+      }
+      setSlotErrors((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+
     setSaving(id)
     const { error } = await supabase
       .from('ads_slots')
@@ -145,7 +169,13 @@ export default function AdsConfig({
                     )
                   )
                 }
-                placeholder="ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX"
+                placeholder={
+                  slot.ad_type === 'banner'
+                    ? 'ca-app-pub-XXXX/XXXX (banner unit)'
+                    : slot.ad_type === 'interstitial'
+                    ? 'ca-app-pub-XXXX/XXXX (interstitial unit)'
+                    : 'ca-app-pub-XXXX/XXXX (rewarded unit)'
+                }
                 className="input font-mono text-xs"
               />
               <button
@@ -158,8 +188,17 @@ export default function AdsConfig({
                 <Save className="w-3 h-3" /> Save
               </button>
             </div>
+            {slotErrors[slot.id] && (
+              <p className="mt-1 text-xs text-danger">{slotErrors[slot.id]}</p>
+            )}
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 p-3 rounded-md bg-info/5 dark:bg-info/10 border border-info/20 text-xs text-slate-600 dark:text-slate-400">
+        <strong className="text-info">Tips:</strong> Ad Unit ID formatnya pakai
+        slash (/) — contoh: ca-app-pub-123456/789012. Berbeda dengan AdMob App
+        ID yang pakai tilde (~). Ambil dari AdMob → Apps → Ad units.
       </div>
     </div>
   )

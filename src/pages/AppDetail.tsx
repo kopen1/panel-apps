@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Loader2,
@@ -7,6 +7,8 @@ import {
   Pencil,
   Trash2,
   Wrench,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import AdsConfig from './AdsConfig'
@@ -15,7 +17,6 @@ import AppUsersTable from '@/components/shared/AppUsersTable'
 import EditAppModal from '@/components/modals/EditAppModal'
 import DeleteAppModal from '@/components/modals/DeleteAppModal'
 import { formatNumber, formatCurrency } from '@/utils/formatters'
-import { useNavigate } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 
 interface AppDetail {
@@ -26,6 +27,7 @@ interface AppDetail {
   ads_enabled: boolean
   is_active: boolean
   maintenance_mode: boolean
+  admob_app_id: string | null
   config_cache_ttl: number
   config_version: string
 }
@@ -48,6 +50,7 @@ export default function AppDetail() {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [togglingMaint, setTogglingMaint] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const fetchAll = async () => {
     if (!id) return
@@ -75,10 +78,19 @@ export default function AppDetail() {
       .from('apps')
       .update({ maintenance_mode: !app.maintenance_mode })
       .eq('id', app.id)
-    if (!error) {
-      setApp({ ...app, maintenance_mode: !app.maintenance_mode })
-    }
+    if (!error) setApp({ ...app, maintenance_mode: !app.maintenance_mode })
     setTogglingMaint(false)
+  }
+
+  const copyAppId = async () => {
+    if (!app?.admob_app_id) return
+    try {
+      await navigator.clipboard.writeText(app.admob_app_id)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback untuk browser lama
+    }
   }
 
   if (loading) {
@@ -130,6 +142,37 @@ export default function AppDetail() {
         {app.description && (
           <p className="mt-4 text-sm text-slate-700 dark:text-slate-300">{app.description}</p>
         )}
+
+        {/* AdMob App ID */}
+        <div className="mt-4 p-3 rounded-md bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                AdMob App ID
+              </div>
+              <div className="text-sm font-mono text-slate-900 dark:text-slate-200 truncate">
+                {app.admob_app_id || '— belum diisi —'}
+              </div>
+            </div>
+            {app.admob_app_id && (
+              <button
+                onClick={copyAppId}
+                className="btn-secondary text-xs flex-shrink-0"
+                title="Copy App ID"
+              >
+                {copied ? (
+                  <Check className="w-3 h-3 text-success" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </button>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            Untuk dokumentasi. ID asli sudah hardcoded di AndroidManifest.xml app.
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm">
           <div>
             <div className="text-slate-500">Status</div>
@@ -153,7 +196,7 @@ export default function AppDetail() {
           </div>
         </div>
 
-        {/* Maintenance per-app toggle */}
+        {/* Maintenance per-app */}
         <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
@@ -205,10 +248,8 @@ export default function AppDetail() {
         )}
       </div>
 
-      {/* App Users Table */}
       <AppUsersTable appId={app.id} />
 
-      {/* Ads Config */}
       <AdsConfig
         appId={app.id}
         appAdsEnabled={app.ads_enabled}

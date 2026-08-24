@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react'
 import Modal from '@/components/ui/Modal'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Plus, Info } from 'lucide-react'
 
 interface NewAppModalProps {
   open: boolean
@@ -13,6 +13,7 @@ export default function NewAppModal({ open, onClose, onCreated }: NewAppModalPro
   const [name, setName] = useState('')
   const [packageName, setPackageName] = useState('')
   const [description, setDescription] = useState('')
+  const [admobAppId, setAdmobAppId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -20,6 +21,7 @@ export default function NewAppModal({ open, onClose, onCreated }: NewAppModalPro
     setName('')
     setPackageName('')
     setDescription('')
+    setAdmobAppId('')
     setError('')
   }
 
@@ -36,10 +38,6 @@ export default function NewAppModal({ open, onClose, onCreated }: NewAppModalPro
       setError('Nama app wajib diisi')
       return
     }
-    if (name.trim().length > 100) {
-      setError('Nama app maksimal 100 karakter')
-      return
-    }
 
     const pkg = packageName.trim().toLowerCase()
     if (!pkg) {
@@ -51,24 +49,42 @@ export default function NewAppModal({ open, onClose, onCreated }: NewAppModalPro
       return
     }
 
+    // Validasi AdMob App ID (kalau diisi)
+    const trimmedAdmob = admobAppId.trim()
+    if (trimmedAdmob && !/^ca-app-pub-\d+~\d+$/.test(trimmedAdmob)) {
+      setError('Format AdMob App ID salah. Harus: ca-app-pub-XXXX~XXXX (pakai tilde ~)')
+      return
+    }
+
     setLoading(true)
-    const { error: rpcError } = await supabase.rpc('add_app_with_slots', {
+    // RPC add_app_with_slots tidak punya param admob_app_id,
+    // jadi create dulu via RPC, lalu update admob_app_id
+    const { data: appId, error: rpcError } = await supabase.rpc('add_app_with_slots', {
       p_name: name.trim(),
       p_package_name: pkg,
       p_description: description.trim() || null,
     })
 
     if (rpcError) {
-      // Format error Supabase jadi lebih readable
       let msg = rpcError.message
       if (msg.includes('duplicate key')) {
-        msg = 'Package name sudah dipakai app lain. Pilih yang unik.'
+        msg = 'Package name sudah dipakai app lain.'
       } else if (msg.includes('Permission denied')) {
         msg = 'Anda tidak punya akses. Hanya admin yang boleh create app.'
-      } else if (msg.includes('Format package name')) {
-        msg = 'Format package name salah. Contoh valid: com.irkop.appb'
       }
       setError(msg)
+    } else if (appId && trimmedAdmob) {
+      // Update admob_app_id setelah create
+      const { error: updateErr } = await supabase
+        .from('apps')
+        .update({ admob_app_id: trimmedAdmob })
+        .eq('id', appId)
+      if (updateErr) {
+        setError('App dibuat tapi gagala simpan AdMob App ID: ' + updateErr.message)
+      } else {
+        reset()
+        onCreated()
+      }
     } else {
       reset()
       onCreated()
@@ -105,6 +121,20 @@ export default function NewAppModal({ open, onClose, onCreated }: NewAppModalPro
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Format: com.irkop.namaapp (huruf kecil, dipisah titik)
           </p>
+        </div>
+        <div>
+          <label className="label">AdMob App ID (opsional)</label>
+          <input
+            type="text"
+            value={admobAppId}
+            onChange={(e) => setAdmobAppId(e.target.value)}
+            className="input font-mono text-xs"
+            placeholder="ca-app-pub-XXXXXXXX~XXXXXXXX"
+          />
+          <div className="mt-1 flex items-start gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            <span>Format tilde (~). Dari AdMob → Apps → App settings.</span>
+          </div>
         </div>
         <div>
           <label className="label">Deskripsi (opsional)</label>

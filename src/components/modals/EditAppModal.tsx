@@ -1,7 +1,7 @@
 import { useState, FormEvent, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Save, AlertTriangle } from 'lucide-react'
+import { Loader2, Save, AlertTriangle, Info } from 'lucide-react'
 
 interface App {
   id: string
@@ -11,6 +11,7 @@ interface App {
   ads_enabled: boolean
   is_active: boolean
   maintenance_mode: boolean
+  admob_app_id: string | null
   config_cache_ttl: number
   config_version: string
 }
@@ -26,6 +27,7 @@ export default function EditAppModal({ open, onClose, app, onUpdated }: EditAppM
   const [name, setName] = useState('')
   const [packageName, setPackageName] = useState('')
   const [description, setDescription] = useState('')
+  const [admobAppId, setAdmobAppId] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [cacheTtl, setCacheTtl] = useState(3600)
@@ -38,6 +40,7 @@ export default function EditAppModal({ open, onClose, app, onUpdated }: EditAppM
       setName(app.name)
       setPackageName(app.package_name)
       setDescription(app.description || '')
+      setAdmobAppId(app.admob_app_id || '')
       setIsActive(app.is_active)
       setMaintenanceMode(app.maintenance_mode ?? false)
       setCacheTtl(app.config_cache_ttl ?? 3600)
@@ -62,6 +65,13 @@ export default function EditAppModal({ open, onClose, app, onUpdated }: EditAppM
       return
     }
 
+    // Validasi format AdMob App ID (kalau diisi)
+    const trimmedAdmob = admobAppId.trim()
+    if (trimmedAdmob && !/^ca-app-pub-\d+~\d+$/.test(trimmedAdmob)) {
+      setError('Format AdMob App ID salah. Harus: ca-app-pub-XXXX~XXXX (pakai tilde ~)')
+      return
+    }
+
     setLoading(true)
     const { error: updateError } = await supabase
       .from('apps')
@@ -69,6 +79,7 @@ export default function EditAppModal({ open, onClose, app, onUpdated }: EditAppM
         name: name.trim(),
         package_name: pkg,
         description: description.trim() || null,
+        admob_app_id: trimmedAdmob || null,
         is_active: isActive,
         maintenance_mode: maintenanceMode,
         config_cache_ttl: Number(cacheTtl) || 3600,
@@ -115,7 +126,24 @@ export default function EditAppModal({ open, onClose, app, onUpdated }: EditAppM
           />
           <div className="mt-1 flex items-start gap-1 text-xs text-warning">
             <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
-            <span>Mengubah package name akan break Flutter app versi lama yang sudah ter-install!</span>
+            <span>Mengubah package name akan break app yang sudah ter-install!</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="label">AdMob App ID</label>
+          <input
+            type="text"
+            value={admobAppId}
+            onChange={(e) => setAdmobAppId(e.target.value)}
+            className="input font-mono text-xs"
+            placeholder="ca-app-pub-XXXXXXXX~XXXXXXXX"
+          />
+          <div className="mt-1 flex items-start gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            <span>
+              Format tilde (~). Untuk catatan saja — ID asli harus di-hardcode di AndroidManifest.xml saat build.
+            </span>
           </div>
         </div>
 
