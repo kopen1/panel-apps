@@ -79,6 +79,7 @@ Irkop adalah ekosistem aplikasi Android yang dikembangkan secara **mobile-first*
 - **Create app**: modal form + auto-create 3 default slots via RPC `add_app_with_slots()`
 - **Edit app**: nama, deskripsi, package_name (with warning), status, maintenance, cache_ttl, config_version
 - **Delete app**: konfirmasi ketik package_name → cascade delete semua data terkait
+- New App modal: tambah field opsional AdMob App ID (validasi format tilde ~)
 
 #### 4.1.4 App Detail Page
 - Header: nama, package_name, deskripsi + status badges
@@ -86,6 +87,7 @@ Irkop adalah ekosistem aplikasi Android yang dikembangkan secara **mobile-first*
 - Users & Metrics section (dari view `v_app_metrics`)
 - App Users table (DataTable dengan 5 columns)
 - Ads Config section (3 slots, edit ad_unit_id + toggle)
+- Tambah box AdMob App ID dengan tombol copy
 
 #### 4.1.5 Ads Configuration (3 Level Control)
 | Level | Lokasi | Field | Dampak |
@@ -93,6 +95,7 @@ Irkop adalah ekosistem aplikasi Android yang dikembangkan secara **mobile-first*
 | 1 — Global | Settings | `global_config.ads_enabled` | SEMUA app |
 | 2 — Per App | AppDetail | `apps.ads_enabled` | App tertentu |
 | 3 — Per Slot | AdsConfig | `ads_slots.is_enabled` | Slot tertentu |
+- Validasi format Ad Unit ID (slash /) + tips box pembeda App ID vs Ad Unit ID
 
 Logika Flutter: `global && app && slot` semua ON → iklan tampil
 
@@ -150,6 +153,24 @@ Logika Flutter: `global OR app` → tampilkan MaintenanceScreen
 #### 4.2.6 Force Update (Planned)
 - Cek `app_versions.min_required` untuk versi terbaru
 - Current < min_required → ForceUpdateScreen
+
+### 4.2.7 AdMob App ID — Limitasi Hard
+  - App ID WAJIB hardcoded di AndroidManifest.xml (SDK butuh sebelum network)
+  - Tidak bisa dinamis dari Supabase (beda dengan Ad Unit ID)
+  - Panel field admob_app_id = dokumentasi saja
+
+### 4.2.8 Interstitial Strategy
+  - Load on-demand saat target tercapai (bukan preload — hindari expired ad)
+  - Gagal load → skip diam-diam, UX tidak terganggu
+
+### 4.2.9 Rewarded — Fitur "Dzikir Bonus"
+  - Tombol hijau di HomeScreen
+  - Nonton iklan selesai → riwayat 30 → 90 hari (permanen, SharedPreferences)
+
+### 4.2.10 Crash Resilience
+  - MobileAds.initialize() dibungkus try-catch (ads gagal ≠ app crash)
+  - Device registration retry di HomeScreen kalau gagal di splash
+
 
 ---
 

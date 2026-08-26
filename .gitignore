@@ -34,5 +34,5 @@ Thumbs.db
 # Supabase (local)
 supabase/.branches
 supabase/.temp
-
+*.bak
 fix

@@ -639,3 +639,19 @@ LANGKAH-LANGKAH SETUP ADMIN PANEL:
 -- ============================================================================
 -- END OF MIGRATION v2 — irkop_migration_v2.sql
 -- ============================================================================
+
+-- ============================================================================
+--  IRKOP MIGRATION v2.1 (DELTA dari v2)
+--  Perubahan: tambah kolom admob_app_id untuk tracking/dokumentasi
+-- ============================================================================
+
+ALTER TABLE public.apps
+  ADD COLUMN IF NOT EXISTS admob_app_id text;
+
+COMMENT ON COLUMN public.apps.admob_app_id IS
+  'AdMob App ID (format ~) untuk dokumentasi. Yang dipakai app tetap hardcoded di AndroidManifest.xml saat build.';
+
+-- Isi untuk Tasbih (opsional):
+UPDATE public.apps
+SET admob_app_id = 'ca-app-pub-3940256099942544~3347511713'
+WHERE package_name = 'com.irkop.tasbih';

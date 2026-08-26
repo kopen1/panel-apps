@@ -7,6 +7,8 @@ import { formatDate, timeAgo } from '@/utils/formatters'
 interface AppUser {
   id: string
   device_id: string
+  device_brand: string | null
+  device_model: string | null
   is_premium: boolean
   theme_preference: string
   last_active_at: string | null
@@ -28,7 +30,7 @@ export default function AppUsersTable({ appId }: AppUsersTableProps) {
       supabase.from('app_users').select('id', { count: 'exact', head: true }).eq('app_id', appId),
       supabase
         .from('app_users')
-        .select('*')
+        .select('id, device_id, device_brand, device_model, is_premium, theme_preference, last_active_at, created_at')
         .eq('app_id', appId)
         .order('created_at', { ascending: false })
         .limit(100),
@@ -49,6 +51,15 @@ export default function AppUsersTable({ appId }: AppUsersTableProps) {
       render: (u) => (
         <span className="font-mono text-xs">
           {u.device_id.slice(0, 8)}…{u.device_id.slice(-4)}
+        </span>
+      ),
+    },
+    {
+      key: 'device',
+      header: 'HP',
+      render: (u) => (
+        <span className="text-xs">
+          {u.device_brand ? `${u.device_brand} ${u.device_model ?? ''}`.trim() : '—'}
         </span>
       ),
     },
