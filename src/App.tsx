@@ -8,6 +8,7 @@ import AppDetail from '@/pages/AppDetail'
 import Settings from '@/pages/Settings'
 import AuditLogs from '@/pages/AuditLogs'
 import NotFound from '@/pages/NotFound'
+import Website from '@/pages/Website'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/apps/:id" element={<AppDetail />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/website" element={<Website />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
