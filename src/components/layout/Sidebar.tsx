@@ -8,7 +8,6 @@ const links = [
   { to: '/apps', label: 'Apps', icon: Smartphone },
   { to: '/audit-logs', label: 'Audit Logs', icon: ScrollText },
   { to: '/settings', label: 'Settings', icon: Settings },
-  { label: 'Website', href: '/website' },
 ]
 
 export default function Sidebar({
