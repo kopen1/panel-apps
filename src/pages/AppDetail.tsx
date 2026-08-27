@@ -18,6 +18,7 @@ import EditAppModal from '@/components/modals/EditAppModal'
 import DeleteAppModal from '@/components/modals/DeleteAppModal'
 import { formatNumber, formatCurrency } from '@/utils/formatters'
 import { cn } from '@/utils/cn'
+import AppReleases from './AppReleases'
 
 interface AppDetail {
   id: string
@@ -249,6 +250,8 @@ export default function AppDetail() {
       </div>
 
       <AppUsersTable appId={app.id} />
+
+      <AppReleases appId={app.id} />
 
       <AdsConfig
         appId={app.id}
