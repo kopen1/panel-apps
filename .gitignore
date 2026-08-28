@@ -34,5 +34,9 @@ Thumbs.db
 # Supabase (local)
 supabase/.branches
 supabase/.temp
+superbase
 *.bak
-fix
+fix/
+fix/*
+*.sh
+Docs/

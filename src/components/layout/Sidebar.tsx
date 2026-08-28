@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Smartphone, Settings, X, ShieldCheck, ScrollText } from 'lucide-react'
+import { LayoutDashboard, Smartphone, Settings, X, ShieldCheck, ScrollText, Globe } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useAuth } from '@/context/AuthContext'
 
@@ -8,6 +8,7 @@ const links = [
   { to: '/apps', label: 'Apps', icon: Smartphone },
   { to: '/audit-logs', label: 'Audit Logs', icon: ScrollText },
   { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/website', label: 'Website', icon: Globe },
 ]
 
 export default function Sidebar({

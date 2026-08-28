@@ -64,7 +64,7 @@ export default function AppReleases({ appId }: { appId: string }) {
         version: v,
         version_code: vc,
         download_url: downloadUrl.trim() || null,
-        changelog: changelog.trim() || null,
+        changelog: changelog || null,
         is_latest: true,
       })
     if (insertErr) {
@@ -110,7 +110,7 @@ export default function AppReleases({ appId }: { appId: string }) {
         version: v,
         version_code: vc,
         download_url: editUrl.trim() || null,
-        changelog: editChangelog.trim() || null,
+        changelog: editChangelog || null,
       })
       .eq('id', editId)
     if (updErr) {

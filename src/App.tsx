@@ -6,6 +6,7 @@ import Dashboard from '@/pages/Dashboard'
 import Apps from '@/pages/Apps'
 import AppDetail from '@/pages/AppDetail'
 import Settings from '@/pages/Settings'
+import Website from '@/pages/Website'
 import AuditLogs from '@/pages/AuditLogs'
 import NotFound from '@/pages/NotFound'
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/apps/:id" element={<AppDetail />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/website" element={<Website />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
