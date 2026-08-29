@@ -13,7 +13,7 @@ MCP connector for the IRKOP ecosystem and Google Blogger API v3.
 - List static pages
 - Validate Blogger Theme XML
 
-The Blogger API v3 officially exposes blog, post, page, comment and related resources, but not Blogger Theme XML upload/update. Therefore theme operations are implemented through an optional **IRKOP Theme Bridge**, rather than pretending the official API supports them. citeturn1search0turn1search1turn1search8
+The Blogger API v3 officially exposes blog, post, page, comment and related resources, but not Blogger Theme XML upload/update. Therefore theme operations are implemented through an optional **IRKOP Theme Bridge**, rather than pretending the official API supports them.
 
 ## Authentication
 
@@ -82,4 +82,4 @@ npm run dev
 3. Build the Theme Bridge with authenticated browser/session automation only if a supported Blogger theme endpoint is unavailable.
 4. Connect the MCP service to the IRKOP Panel so content, SEO and project publishing are managed from one ecosystem.
 
-The MCP server is based on the official TypeScript MCP SDK. citeturn0search0turn0search5
+The MCP server is based on the official TypeScript MCP SDK.
